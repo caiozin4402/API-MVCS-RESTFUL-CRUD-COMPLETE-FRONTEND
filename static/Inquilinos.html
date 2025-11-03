@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casa Branca - CRUD Inquilinos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .operation-card {
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            border: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+            border: none;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+            border: none;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .action-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            margin: 0 2px;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+        }
+
+        .operation-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            background: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Cabeçalho -->
+        <div class="content-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2>👤 CRUD Completo - Inquilinos</h2>
+                    <p class="text-muted mb-0">Operações completas de Create, Read, Update e Delete</p>
+                </div>
+                <a href="dashboard.html" class="btn btn-secondary">← Voltar</a>
+            </div>
+        </div>
+
+        <!-- 🔍 DIV 1: BUSCAR TODOS OS INQUILINOS -->
+        <div class="content-card operation-card">
+            <h4 class="text-primary mb-3">🔍 BUSCAR TODOS OS INQUILINOS</h4>
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <p class="mb-2">Recupere a lista completa de todos os inquilinos cadastrados no sistema.</p>
+                    <small class="text-muted">Operação: GET /api/v1/inquilinos</small>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-info btn-lg" onclick="buscarTodosInquilinos()">
+                        <i class="bi bi-search"></i> Buscar Todos
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Resultado da Busca -->
+            <div id="resultadoBuscarTodos" class="mt-3" style="display: none;">
+                <h6>Resultado:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Requisição</th>
+                                <th>CPF</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaBuscarTodos">
+                            <!-- Dados serão preenchidos via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔎 DIV 2: BUSCAR INQUILINO POR ID -->
+        <div class="content-card operation-card">
+            <h4 class="text-primary mb-3">🔎 BUSCAR INQUILINO POR ID</h4>
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label for="inputBuscarId" class="form-label">ID do Inquilino:</label>
+                    <input type="number" class="form-control" id="inputBuscarId" placeholder="Ex: 1" min="1">
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-0">Busque um inquilino específico pelo seu ID único.</p>
+                    <small class="text-muted">Operação: GET /api/v1/inquilinos/{id}</small>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button class="btn btn-info" onclick="buscarInquilinoPorId()">
+                        <i class="bi bi-search"></i> Buscar por ID
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Resultado da Busca por ID -->
+            <div id="resultadoBuscarPorId" class="mt-3" style="display: none;">
+                <h6>Resultado:</h6>
+                <div class="card">
+                    <div class="card-body">
+                        <div id="detalhesInquilino">
+                            <!-- Detalhes serão preenchidos via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ➕ DIV 3: CRIAR NOVO INQUILINO -->
+        <div class="content-card operation-card">
+            <h4 class="text-success mb-3">➕ CRIAR NOVO INQUILINO</h4>
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="mb-3">Cadastre um novo inquilino no sistema preenchendo os dados abaixo.</p>
+                    
+                    <form id="formCriarInquilino">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="criarNome" class="form-label">Nome *</label>
+                                <input type="text" class="form-control" id="criarNome" placeholder="Nome completo" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="criarEmail" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="criarEmail" placeholder="email@exemplo.com" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="criarTelefone" class="form-label">Telefone *</label>
+                                <input type="text" class="form-control" id="criarTelefone" placeholder="(11) 98765-4321" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="criarRequisicao" class="form-label">Requisição</label>
+                                <input type="text" class="form-control" id="criarRequisicao" placeholder="Observações">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="criarCpf" class="form-label">CPF *</label>
+                                <input type="text" class="form-control" id="criarCpf" placeholder="000.000.000-00" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success btn-lg" onclick="criarInquilino()">
+                            <i class="bi bi-plus-circle"></i> Criar Inquilino
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="limparFormularioCriar()">
+                            <i class="bi bi-arrow-clockwise"></i> Limpar
+                        </button>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Operação: POST /api/v1/inquilinos</small>
+                </div>
+            </div>
+            
+            <!-- Resultado da Criação -->
+            <div id="resultadoCriar" class="mt-3" style="display: none;">
+                <h6>Resultado:</h6>
+                <div class="alert alert-success" id="mensagemCriar">
+                    <!-- Mensagem será preenchida via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ✏️ DIV 4: ATUALIZAR INQUILINO -->
+        <div class="content-card operation-card">
+            <h4 class="text-warning mb-3">✏️ ATUALIZAR INQUILINO</h4>
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="mb-3">Atualize os dados de um inquilino existente. Primeiro busque pelo ID, depois edite os campos.</p>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="inputIdAtualizar" class="form-label">ID do Inquilino para Editar:</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="inputIdAtualizar" placeholder="Ex: 1" min="1">
+                                <button class="btn btn-outline-info" type="button" onclick="carregarDadosParaEdicao()">
+                                    <i class="bi bi-download"></i> Carregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="formAtualizarInquilino">
+                        <input type="hidden" id="atualizarId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="atualizarNome" class="form-label">Nome *</label>
+                                <input type="text" class="form-control" id="atualizarNome" placeholder="Nome completo" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="atualizarEmail" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="atualizarEmail" placeholder="email@exemplo.com" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="atualizarTelefone" class="form-label">Telefone *</label>
+                                <input type="text" class="form-control" id="atualizarTelefone" placeholder="(11) 98765-4321" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="atualizarRequisicao" class="form-label">Requisição</label>
+                                <input type="text" class="form-control" id="atualizarRequisicao" placeholder="Observações">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="atualizarCpf" class="form-label">CPF *</label>
+                                <input type="text" class="form-control" id="atualizarCpf" placeholder="000.000.000-00" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-warning btn-lg" onclick="atualizarInquilino()" id="btnAtualizar" disabled>
+                            <i class="bi bi-pencil-square"></i> Atualizar Inquilino
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="limparFormularioAtualizar()">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </button>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Operação: PUT /api/v1/inquilinos/{id}</small>
+                </div>
+            </div>
+            
+            <!-- Resultado da Atualização -->
+            <div id="resultadoAtualizar" class="mt-3" style="display: none;">
+                <h6>Resultado:</h6>
+                <div class="alert alert-warning" id="mensagemAtualizar">
+                    <!-- Mensagem será preenchida via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 🗑️ DIV 5: DELETAR INQUILINO -->
+        <div class="content-card operation-card">
+            <h4 class="text-danger mb-3">🗑️ DELETAR INQUILINO</h4>
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label for="inputIdDeletar" class="form-label">ID do Inquilino para Deletar:</label>
+                    <input type="number" class="form-control" id="inputIdDeletar" placeholder="Ex: 1" min="1">
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-2 text-danger"><strong>Atenção:</strong> Esta ação não pode ser desfeita!</p>
+                    <small class="text-muted">Operação: DELETE /api/v1/inquilinos/{id}</small>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button class="btn btn-danger btn-lg" onclick="solicitarDelecao()">
+                        <i class="bi bi-trash"></i> Deletar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Resultado da Deleção -->
+            <div id="resultadoDeletar" class="mt-3" style="display: none;">
+                <h6>Resultado:</h6>
+                <div class="alert alert-danger" id="mensagemDeletar">
+                    <!-- Mensagem será preenchida via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 📊 DIV 6: LISTA COMPLETA EM TEMPO REAL -->
+        <div class="content-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>📊 LISTA COMPLETA DE INQUILINOS</h4>
+                <button class="btn btn-outline-primary" onclick="atualizarListaCompleta()">
+                    <i class="bi bi-arrow-clockwise"></i> Atualizar Lista
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                            <th>Requisição</th>
+                            <th>CPF</th>
+                            <th>Ações Rápidas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaInquilinosCompleta">
+                        <tr>
+                            <td colspan="7" class="text-center">Carregando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mensagens Globais -->
+        <div id="divMensagemGlobal"></div>
+    </div>
+
+    <script type="module">
+    import ApiService from './ApiService.js';
+
+    // ==================== CONFIGURAÇÃO INICIAL ====================
+    console.log("🚀 Inicializando CRUD Completo de Inquilinos...");
+
+    // Verificar autenticação
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    if (!userData) {
+        window.location.href = "./login.html";
+    }
+
+    const token = userData.data?.token || userData.token;
+    const api = new ApiService(token, "http://127.0.0.1:8000");
+
+    // ==================== FUNÇÕES DE POPULAÇÃO DE TABELA ====================
+    window.popularTabelaInquilinos = function(inquilinos) {
+    console.log("🎨 POPULAR TABELA - Iniciando...");
+    console.log("📊 Inquilinos recebidos:", inquilinos);
+    
+    const tbody = document.getElementById('tabelaBuscarTodos');
+    const resultadoDiv = document.getElementById('resultadoBuscarTodos');
+    
+    if (!tbody) {
+        console.log("❌ Elemento #tabelaBuscarTodos não encontrado");
+        return;
+    }
+    
+    // Limpar tabela
+    tbody.innerHTML = '';
+    
+    if (inquilinos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum inquilino encontrado</td></tr>';
+    } else {
+        // Adicionar cada inquilino na tabela
+        inquilinos.forEach(inquilino => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${inquilino.idInquilino}</td>
+                <td>${inquilino.nome || inquilino.nomeInquilino || 'N/A'}</td>
+                <td>${inquilino.email || 'N/A'}</td>
+                <td>${inquilino.telefone || 'N/A'}</td>
+                <td>${inquilino.requisicao || 'Nenhuma'}</td>
+                <td>${inquilino.cpf || 'N/A'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Mostrar a seção de resultados
+    resultadoDiv.style.display = 'block';
+    
+    console.log(`✅ Tabela populada com ${inquilinos.length} inquilinos`);
+}
+
+
+    // ==================== FUNÇÕES GLOBAIS (PARA ONCLICK) ====================
+
+    // 🔍 1. BUSCAR TODOS OS INQUILINOS
+    window.buscarTodosInquilinos = async function() {
+    console.log("📋 BUSCAR TODOS - Iniciando...");
+    
+    try {
+        const response = await api.get('/api/v1/inquilinos');
+        console.log("📦 BUSCAR TODOS - Resposta COMPLETA:", response);
+        
+        // ✅ DEBUG: Verifique a estrutura real
+        console.log("🔍 data:", response.data);
+        console.log("🔍 data.Inquilinos:", response.data?.Inquilinos);
+        console.log("🔍 Array?", Array.isArray(response.data?.Inquilinos));
+        
+        let inquilinos = [];
+        
+        // ✅ MULTIPLAS ESTRUTURAS POSSÍVEIS
+        if (response.data?.Inquilinos && Array.isArray(response.data.Inquilinos)) {
+            inquilinos = response.data.Inquilinos;
+            console.log("✅ Estrutura: data.Inquilinos");
+        } else if (Array.isArray(response.data)) {
+            inquilinos = response.data;
+            console.log("✅ Estrutura: data (array direto)");
+        } else if (Array.isArray(response)) {
+            inquilinos = response;
+            console.log("✅ Estrutura: response (array direto)");
+        } else {
+            console.log("❌ Estrutura desconhecida:", response);
+            throw new Error("Estrutura de resposta desconhecida");
+        }
+        
+        console.log(`👥 BUSCAR TODOS - ${inquilinos.length} inquilinos processados`);
+        console.log("📊 Primeiro inquilino:", inquilinos[0]);
+        
+        if (inquilinos.length === 0) {
+            mostrarMensagem("Nenhum inquilino encontrado", 'info');
+        } else {
+            popularTabelaInquilinos(inquilinos);
+            mostrarMensagem(`✅ ${inquilinos.length} inquilinos carregados`, 'success');
+        }
+        
+    } catch (error) {
+        console.log("❌ BUSCAR TODOS - Erro:", error);
+        mostrarMensagem(`❌ Erro ao carregar inquilinos: ${error.message}`, 'error');
+    }
+}
+
+    // 🔎 2. BUSCAR INQUILINO POR ID
+    window.buscarInquilinoPorId = async function() {
+    console.log("🔍 BUSCAR POR ID - Iniciando...");
+    
+    try {
+        const id = document.getElementById('inputBuscarId').value;
+        if (!id) {
+            throw new Error("Digite um ID para buscar");
+        }
+        
+        console.log("🔍 BUSCAR POR ID - Buscando ID:", id);
+        const response = await api.getById('/api/v1/inquilinos', id);
+        console.log("📦 BUSCAR POR ID - Resposta COMPLETA:", response);
+        
+        // ✅ DEBUG: Verifique a estrutura
+        console.log("🔍 response.data:", response.data);
+        console.log("🔍 response.data.Inquilinos:", response.data?.Inquilinos);
+        
+        let inquilino = null;
+        
+        if (response.data?.Inquilinos) {
+            inquilino = response.data.Inquilinos;
+            console.log("✅ Inquilino encontrado:", inquilino);
+        } else if (response.data) {
+            inquilino = response.data;
+            console.log("✅ Inquilino encontrado (data direto):", inquilino);
+        }
+        
+        if (!inquilino) {
+            throw new Error("Inquilino não encontrado na resposta");
+        }
+        
+        // Mostrar resultado
+        const resultadoDiv = document.getElementById('resultadoBuscarPorId');
+        const detalhesDiv = document.getElementById('detalhesInquilino');
+        
+        detalhesDiv.innerHTML = `
+            <p><strong>ID:</strong> ${inquilino.idInquilino}</p>
+            <p><strong>Nome:</strong> ${inquilino.nome || inquilino.nomeInquilino || 'N/A'}</p>
+            <p><strong>Email:</strong> ${inquilino.email || 'N/A'}</p>
+            <p><strong>Telefone:</strong> ${inquilino.telefone || 'N/A'}</p>
+            <p><strong>CPF:</strong> ${inquilino.cpf || 'N/A'}</p>
+            <p><strong>Requisição:</strong> ${inquilino.requisicao || 'Nenhuma'}</p>
+        `;
+        resultadoDiv.style.display = 'block';
+        
+        mostrarMensagem("✅ Inquilino encontrado!", 'success');
+        
+    } catch (error) {
+        console.log("❌ BUSCAR POR ID - Erro:", error);
+        mostrarMensagem(`❌ ${error.message}`, 'error');
+    }
+}
+
+    // ==================== FUNÇÕES DE UI ====================
+    function mostrarMensagem(mensagem, tipo = 'info', elementoId = null) {
+        console.log(`💬 MENSAGEM [${tipo}]: ${mensagem}`);
+        
+        if (elementoId) {
+            const elemento = document.getElementById(elementoId);
+            if (elemento) {
+                elemento.innerHTML = mensagem;
+                elemento.className = `alert alert-${tipo === 'error' ? 'danger' : tipo}`;
+                elemento.style.display = 'block';
+                elemento.parentElement.style.display = 'block';
+            }
+        } else {
+            // Mensagem global
+            alert(mensagem); // Fallback simples
+        }
+    }
+
+    // ==================== OPERAÇÕES CRUD ====================
+
+    // ➕ 3. CRIAR INQUILINO
+    window.criarInquilino = async function() {
+        const dados = {
+            Inquilino: {
+                nome: document.getElementById('criarNome').value.trim(),
+                email: document.getElementById('criarEmail').value.trim(),
+                telefone: document.getElementById('criarTelefone').value.trim(),
+                requisicao: document.getElementById('criarRequisicao').value.trim(),
+                cpf: document.getElementById('criarCpf').value.trim()
+            }
+        };
+
+        // Validações
+        if (!dados.Inquilino.nome || !dados.Inquilino.email || 
+            !dados.Inquilino.telefone || !dados.Inquilino.cpf) {
+            alert("Por favor, preencha todos os campos obrigatórios");
+            return;
+        }
+
+        console.log("➕ CRIAR - Dados:", dados);
+        
+        try {
+            const response = await api.post("/api/v1/inquilinos", dados);
+            console.log("📦 CRIAR - Resposta:", response);
+            
+            if (response.success) {
+                mostrarMensagem("Inquilino criado com sucesso! ID: " + 
+                    (response.data.Inquilinos.idInquilino || "N/A"), "success", "mensagemCriar");
+                limparFormularioCriar();
+                atualizarListaCompleta();
+            } else {
+                throw new Error(response.error?.message || "Erro ao criar inquilino");
+            }
+        } catch (error) {
+            console.error("❌ CRIAR - Erro:", error);
+            mostrarMensagem("Erro ao criar inquilino: " + error.message, "danger", "mensagemCriar");
+        }
+    };
+
+    // ✏️ 4. ATUALIZAR INQUILINO
+    window.carregarDadosParaEdicao = async function() {
+        const id = document.getElementById('inputIdAtualizar').value.trim();
+        
+        if (!id) {
+            alert("Por favor, informe o ID do inquilino para editar");
+            return;
+        }
+
+        console.log(`✏️ CARREGAR PARA EDIÇÃO - ID: ${id}`);
+        
+        try {
+            const response = await api.getById("/api/v1/inquilinos", id);
+            
+            if (response.success && response.data.Inquilinos) {
+                const inquilino = response.data.Inquilinos;
+                
+                // Preencher formulário de edição
+                document.getElementById('atualizarId').value = inquilino.idInquilino;
+                document.getElementById('atualizarNome').value = inquilino.nome || inquilino.nomeInquilino || '';
+                document.getElementById('atualizarEmail').value = inquilino.email || '';
+                document.getElementById('atualizarTelefone').value = inquilino.telefone || '';
+                document.getElementById('atualizarRequisicao').value = inquilino.requisicao || '';
+                document.getElementById('atualizarCpf').value = inquilino.cpf || '';
+                
+                // Habilitar botão de atualizar
+                document.getElementById('btnAtualizar').disabled = false;
+                
+                mostrarMensagem("Dados carregados para edição", "info");
+            } else {
+                throw new Error("Inquilino não encontrado");
+            }
+        } catch (error) {
+            console.error("❌ CARREGAR EDIÇÃO - Erro:", error);
+            alert("Erro ao carregar dados: " + error.message);
+        }
+    };
+
+    window.atualizarInquilino = async function() {
+        const id = document.getElementById('atualizarId').value;
+        
+        if (!id) {
+            alert("Nenhum inquilino carregado para edição");
+            return;
+        }
+
+        const dados = {
+            Inquilino: {
+                nome: document.getElementById('atualizarNome').value.trim(),
+                email: document.getElementById('atualizarEmail').value.trim(),
+                telefone: document.getElementById('atualizarTelefone').value.trim(),
+                requisicao: document.getElementById('atualizarRequisicao').value.trim(),
+                cpf: document.getElementById('atualizarCpf').value.trim()
+            }
+        };
+
+        console.log(`✏️ ATUALIZAR - ID: ${id}, Dados:`, dados);
+        
+        try {
+            const response = await api.put("/api/v1/inquilinos", id, dados);
+            console.log("📦 ATUALIZAR - Resposta:", response);
+            
+            if (response.success) {
+                mostrarMensagem("Inquilino atualizado com sucesso!", "success", "mensagemAtualizar");
+                limparFormularioAtualizar();
+                atualizarListaCompleta();
+            } else {
+                throw new Error(response.error?.message || "Erro ao atualizar inquilino");
+            }
+        } catch (error) {
+            console.error("❌ ATUALIZAR - Erro:", error);
+            mostrarMensagem("Erro ao atualizar inquilino: " + error.message, "danger", "mensagemAtualizar");
+        }
+    };
+
+    // 🗑️ 5. DELETAR INQUILINO
+    window.solicitarDelecao = function() {
+        const id = document.getElementById('inputIdDeletar').value.trim();
+        
+        if (!id) {
+            alert("Por favor, informe o ID do inquilino para deletar");
+            return;
+        }
+
+        if (confirm(`Tem certeza que deseja deletar o inquilino ID ${id}? Esta ação não pode ser desfeita!`)) {
+            executarDelecao(id);
+        }
+    };
+
+    async function executarDelecao(id) {
+        console.log(`🗑️ DELETAR - ID: ${id}`);
+        
+        try {
+            const response = await api.delete("/api/v1/inquilinos", id);
+            console.log("📦 DELETAR - Resposta:", response);
+            
+            if (response.success) {
+                mostrarMensagem("Inquilino deletado com sucesso!", "success", "mensagemDeletar");
+                document.getElementById('inputIdDeletar').value = '';
+                atualizarListaCompleta();
+            } else {
+                throw new Error(response.error?.message || "Erro ao deletar inquilino");
+            }
+        } catch (error) {
+            console.error("❌ DELETAR - Erro:", error);
+            mostrarMensagem("Erro ao deletar inquilino: " + error.message, "danger", "mensagemDeletar");
+        }
+    }
+
+    // 📊 6. LISTA COMPLETA
+    window.atualizarListaCompleta = async function() {
+        try {
+            const response = await api.get("/api/v1/inquilinos");
+            const tbody = document.getElementById('tabelaInquilinosCompleta');
+            
+            if (response.success && response.data.Inquilinos) {
+                const inquilinos = response.data.Inquilinos;
+                
+                if (inquilinos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">Nenhum inquilino cadastrado</td></tr>';
+                } else {
+                    tbody.innerHTML = inquilinos.map(inq => `
+                        <tr>
+                            <td><strong>#${inq.idInquilino}</strong></td>
+                            <td>${inq.nome || inq.nomeInquilino || 'N/A'}</td>
+                            <td>${inq.email || 'N/A'}</td>
+                            <td>${inq.telefone || 'N/A'}</td>
+                            <td>${inq.requisicao || 'Nenhuma'}</td>
+                            <td>${inq.cpf || 'N/A'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-warning action-btn" 
+                                        onclick="preencherEdicaoRapida(${inq.idInquilino})">
+                                    Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger action-btn" 
+                                        onclick="delecaoRapida(${inq.idInquilino})">
+                                    Excluir
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            }
+        } catch (error) {
+            console.error("❌ LISTA COMPLETA - Erro:", error);
+            document.getElementById('tabelaInquilinosCompleta').innerHTML = 
+                '<tr><td colspan="7" class="text-center text-danger">Erro ao carregar lista</td></tr>';
+        }
+    };
+
+    // ==================== FUNÇÕES AUXILIARES ====================
+    window.limparFormularioCriar = function() {
+        document.getElementById('formCriarInquilino').reset();
+    };
+
+    window.limparFormularioAtualizar = function() {
+        document.getElementById('formAtualizarInquilino').reset();
+        document.getElementById('atualizarId').value = '';
+        document.getElementById('btnAtualizar').disabled = true;
+        document.getElementById('inputIdAtualizar').value = '';
+    };
+
+    window.preencherEdicaoRapida = function(id) {
+        document.getElementById('inputIdAtualizar').value = id;
+        carregarDadosParaEdicao();
+        // Scroll para a seção de edição
+        document.querySelector('.content-card h4.text-warning').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.delecaoRapida = function(id) {
+        if (confirm(`Deletar inquilino ID ${id}?`)) {
+            document.getElementById('inputIdDeletar').value = id;
+            executarDelecao(id);
+        }
+    };
+
+    // ==================== INICIALIZAÇÃO ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("🚀 CRUD Completo inicializado");
+        atualizarListaCompleta();
+    });
+
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

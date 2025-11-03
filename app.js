@@ -1,7 +1,14 @@
-const express = require('express'); //importa o express
-const app = express(); //recupera uma instancia de express
-const portaServico = 3000;
+const Server = require('./Server');
 
-//inicia a espera por requisições http na porta 3000
-//app.listen(portaServico);
-//console.log("Api rodando no endereço: http://localhost:3000/")
+(async () => {
+    try {
+        const server = new Server(8000);
+        await server.init();
+        server.start();
+        
+        console.log("✅ Servidor inicializado com sucesso!");
+    } catch (error) {
+        console.error("❌ Erro ao iniciar servidor:", error);
+        process.exit(1); // Encerra o processo com erro
+    }
+})();

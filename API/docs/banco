@@ -1,16 +1,43 @@
-CREATE SCHEMA IF NOT EXISTS `casa_branca` DEFAULT CHARACTER SET utf8mb3 ;
-USE `casa_branca` ;
+-- 1️⃣ Deleta o banco antigo (se existir)
+DROP DATABASE IF EXISTS `casa_branca`;
 
--- -----------------------------------------------------
--- Table `casa_branca`.`inquilino`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `casa_branca`.`inquilino` (
+-- 2️⃣ Cria o novo banco
+CREATE DATABASE `casa_branca` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `casa_branca`;
+
+-- 3️⃣ Tabela de Inquilinos
+CREATE TABLE IF NOT EXISTS `inquilino` (
   `idInquilino` INT NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(70) NULL DEFAULT NULL,
-  `start_moradia` VARCHAR(45) NULL DEFAULT NULL,
-  `end_moradia` VARCHAR(45) NULL DEFAULT NULL,
-  `telefone` VARCHAR(45) NULL DEFAULT NULL,
-  `email` VARCHAR(45) NULL DEFAULT NULL,
-  `requisicao` VARCHAR(1000) NULL,
-  `CPF` VARCHAR(11) NULL,
-  PRIMARY KEY (`idInquilino`))
+  `nome` VARCHAR(70) NOT NULL,
+  `start_moradia` DATE NOT NULL,
+  `end_moradia` DATE NOT NULL,
+  `telefone` VARCHAR(20) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `requisicao` VARCHAR(1000) DEFAULT NULL,
+  `CPF` VARCHAR(11) NOT NULL,
+  PRIMARY KEY (`idInquilino`),
+  UNIQUE KEY `unique_email` (`email`),
+  UNIQUE KEY `unique_cpf` (`CPF`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 4️⃣ Tabela de Chalés (opcional, já pronta para expandir)
+CREATE TABLE IF NOT EXISTS `chale` (
+  `idChale` INT NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(50) NOT NULL,
+  `descricao` VARCHAR(255) DEFAULT NULL,
+  `capacidade` INT NOT NULL,
+  PRIMARY KEY (`idChale`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 5️⃣ Tabela de Reservas (relaciona inquilino e chalé)
+CREATE TABLE IF NOT EXISTS `reserva` (
+  `idReserva` INT NOT NULL AUTO_INCREMENT,
+  `idInquilino` INT NOT NULL,
+  `idChale` INT NOT NULL,
+  `start_moradia` DATE NOT NULL,
+  `end_moradia` DATE NOT NULL,
+  PRIMARY KEY (`idReserva`),
+  FOREIGN KEY (`idInquilino`) REFERENCES `inquilino`(`idInquilino`) ON DELETE CASCADE,
+  FOREIGN KEY (`idChale`) REFERENCES `chale`(`idChale`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
